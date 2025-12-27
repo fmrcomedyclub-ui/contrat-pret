@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Contrat de Prêt</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #ecf0f1;
+            --surface-color: #ffffff;
+            --text-color: #333;
+            --border-color: #bdc3c7;
+            --error-color: #e74c3c;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .main-title {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .app-container {
+            display: grid;
+            grid-template-columns: 40% 60%;
+            gap: 20px;
+            width: 100%;
+            max-width: 1400px;
+        }
+        
+        .form-container, .preview-container {
+            background-color: var(--surface-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 25px;
+            overflow: auto;
+        }
+        
+        .form-container {
+            height: calc(100vh - 120px);
+        }
+        
+        .preview-container {
+            height: calc(100vh - 120px);
+        }
+        
+        h1, h2, h3 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        
+        fieldset {
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+        
+        legend {
+            font-weight: bold;
+            color: var(--primary-color);
+            padding: 0 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        
+        input[type="text"], input[type="email"], input[type="date"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .print-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .print-button:hover {
+            background-color: #2980b9;
+        }
+        
+        .contract-preview {
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .contract-preview h1, .contract-preview h2 {
+            font-family: 'Times New Roman', Times, serif;
+            color: #000;
+            border-bottom: none;
+            text-align: center;
+        }
+        
+        .contract-preview strong {
+            font-weight: bold;
+        }
+        
+        .contract-preview .signature-block {
+            margin-top: 60px;
+        }
+        
+        .contract-preview .mention {
+            font-size: 0.9em;
+            font-style: italic;
+            color: #555;
+        }
+        
+        .contract-preview hr {
+            border: 0;
+            border-top: 1px solid #ccc;
+            margin: 30px 0;
+        }
+        
+        .placeholder {
+            color: #aaa;
+            font-style: italic;
+        }
+        
+        @media print {
+            .main-title, .print-button, .form-container {
+                display: none !important;
+            }
+            body {
+                background: white;
+            }
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+            .preview-container {
+                box-shadow: none;
+                padding: 0;
+                height: auto;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+            .form-container, .preview-container {
+                height: auto;
+            }
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="main-title">Générateur de Contrat de Prêt</h1>
+    <div class="app-container">
+        <div class="form-container">
+            <h3>Informations du Contrat</h3>
+            
+            <fieldset>
+                <legend><strong>Partie 1 : Le Prêteur</strong></legend>
+                <div class="form-group">
+                    <label>Nom & Prénom</label>
+                    <input type="text" id="lenderName" placeholder="Jean Dupont" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date de naissance</label>
+                        <input type="date" id="lenderBirthDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>Lieu de naissance</label>
+                        <input type="text" id="lenderBirthPlace" placeholder="Lyon" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adresse complète</label>
+                    <input type="text" id="lenderAddress" placeholder="10 Rue de la Paix, 75002 Paris" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="lenderEmail" placeholder="jean.dupont@email.com" />
+                    </div>
+                    <div class="form-group">
+                        <label>IBAN</label>
+                        <input type="text" id="lenderIban" placeholder="FR76 1234 5678 9012 3456 7890 123" />
+                    </div>
+                </div>
+            </fieldset>
+            
+            <fieldset>
+                <legend><strong>Partie 2 : L'Emprunteur</strong></legend>
+                <div class="form-group">
+                    <label>Nom & Prénom</label>
+                    <input type="text" id="borrowerName" placeholder="Marie Martin" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date de naissance</label>
+                        <input type="date" id="borrowerBirthDate" />
+                    </div>
+                    <div class="form-group">
+                        <label>Lieu de naissance</label>
+                        <input type="text" id="borrowerBirthPlace" placeholder="Marseille" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adresse complète</label>
+                    <input type="text" id="borrowerAddress" placeholder="25 Avenue du Prado, 13008 Marseille" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="borrowerEmail" placeholder="marie.martin@email.com" />
+                    </div>
+                    <div class="form-group">
+                        <label>SIRET (si applicable)</label>
+                        <input type="text" id="borrowerSiret" placeholder="123 456 789 00010" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>IBAN</label>
+                    <input type="text" id="borrowerIban" placeholder="FR76 9876 5432 1098 7654 3210 987" />
+                </div>
+            </fieldset>
+            
+            <fieldset>
+                <legend><strong>Partie 3 : Véhicule Financé</strong></legend>
+                <div class="form-group">
+                    <label>Modèle du véhicule</label>
+                    <input type="text" id="vehicleModel" placeholder="Peugeot 308" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Année</label>
+                        <input type="number" id="vehicleYear" placeholder="2020" min="1990" max="2025" />
+                    </div>
+                    <div class="form-group">
+                        <label>Immatriculation</label>
+                        <input type="text" id="vehiclePlate" placeholder="AB-123-CD" />
+                    </div>
+                </div>
+            </fieldset>
+            
+            <fieldset>
+                <legend><strong>Partie 4 : Conditions du Prêt</strong></legend>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Montant du prêt (en chiffres)</label>
+                        <input type="number" id="amountFigures" placeholder="5000" />
+                    </div>
+                    <div class="form-group">
+                        <label>Montant du prêt (en lettres)</label>
+                        <input type="text" id="amountLetters" placeholder="Cinq mille" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Date du virement effectué</label>
+                    <input type="date" id="dateVirement" />
+                </div>
+                <div class="form-group">
+                    <label>Mode de versement</label>
+                    <input type="text" id="paymentMethod" value="Virement bancaire" />
+                </div>
+                <div class="form-group">
+                    <label>Date butoir de remboursement</label>
+                    <input type="date" id="repaymentDeadline" />
+                </div>
+                
+                <div class="form-group">
+                    <label>Prêt avec rémunération ?</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="hasRemuneration" value="no" checked /> Aucune</label>
+                        <label><input type="radio" name="hasRemuneration" value="percentage" /> Intérêts (%)</label>
+                        <label><input type="radio" name="hasRemuneration" value="fixed" /> Montant fixe (€)</label>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="percentageGroup" style="display: none;">
+                    <label>Taux d'intérêt annuel (%)</label>
+                    <input type="number" id="interestRate" placeholder="2.5" step="0.1" />
+                </div>
+                
+                <div class="form-group" id="fixedAmountGroup" style="display: none;">
+                    <label>Montant fixe de rémunération (€)</label>
+                    <input type="number" id="fixedAmount" placeholder="500" />
+                </div>
+            </fieldset>
+            
+            <fieldset>
+                <legend><strong>Partie 5 : Signature</strong></legend>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Lieu de signature</label>
+                        <input type="text" id="signaturePlace" value="Paris" />
+                    </div>
+                    <div class="form-group">
+                        <label>Date de signature</label>
+                        <input type="date" id="signatureDate" />
+                    </div>
+                </div>
+            </fieldset>
+            
+            <button class="print-button" onclick="window.print()">Imprimer / Sauvegarder en PDF</button>
+        </div>
+        
+        <div class="preview-container">
+            <div class="contract-preview" id="contractPreview">
+                <!-- Le contrat sera généré ici -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Définir la date d'aujourd'hui par défaut
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().slice(0, 10);
+            document.getElementById('dateVirement').value = today;
+            document.getElementById('signatureDate').value = today;
+            updatePreview();
+        });
+
+        // Gestion du choix de rémunération
+        document.querySelectorAll('input[name="hasRemuneration"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const percentageGroup = document.getElementById('percentageGroup');
+                const fixedAmountGroup = document.getElementById('fixedAmountGroup');
+                
+                // Cacher tous les groupes
+                percentageGroup.style.display = 'none';
+                fixedAmountGroup.style.display = 'none';
+                
+                // Afficher le groupe approprié
+                if (this.value === 'percentage') {
+                    percentageGroup.style.display = 'block';
+                } else if (this.value === 'fixed') {
+                    fixedAmountGroup.style.display = 'block';
+                }
+                
+                // Réinitialiser les valeurs non utilisées
+                if (this.value !== 'percentage') {
+                    document.getElementById('interestRate').value = '';
+                }
+                if (this.value !== 'fixed') {
+                    document.getElementById('fixedAmount').value = '';
+                }
+                
+                updatePreview();
+            });
+        });
+
+        // Mise à jour en temps réel
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', updatePreview);
+            input.addEventListener('change', updatePreview);
+        });
+
+        function formatDate(dateString) {
+            if (!dateString) return '<span class="placeholder">[Date]</span>';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR');
+        }
+
+        function getValue(id) {
+            const element = document.getElementById(id);
+            return element ? element.value : '';
+        }
+
+        function getPlaceholder(text) {
+            return `<span class="placeholder">[${text}]</span>`;
+        }
+
+        function updatePreview() {
+            // Données du prêteur
+            const lenderName = getValue('lenderName') || getPlaceholder('Nom Prénom du Prêteur');
+            const lenderBirthDate = getValue('lenderBirthDate');
+            const lenderBirthPlace = getValue('lenderBirthPlace') || getPlaceholder('Lieu de naissance');
+            const lenderAddress = getValue('lenderAddress') || getPlaceholder('Adresse complète du Prêteur');
+            const lenderEmail = getValue('lenderEmail') || getPlaceholder('Email du Prêteur');
+            const lenderIban = getValue('lenderIban') || getPlaceholder('IBAN du Prêteur');
+
+            // Données de l'emprunteur
+            const borrowerName = getValue('borrowerName') || getPlaceholder('Nom Prénom de l\'Emprunteur');
+            const borrowerBirthDate = getValue('borrowerBirthDate');
+            const borrowerBirthPlace = getValue('borrowerBirthPlace') || getPlaceholder('Lieu de naissance');
+            const borrowerAddress = getValue('borrowerAddress') || getPlaceholder('Adresse complète de l\'Emprunteur');
+            const borrowerEmail = getValue('borrowerEmail') || getPlaceholder('Email de l\'Emprunteur');
+            const borrowerSiret = getValue('borrowerSiret');
+            const borrowerIban = getValue('borrowerIban') || getPlaceholder('IBAN de l\'Emprunteur');
+
+            // Données du véhicule
+            const vehicleModel = getValue('vehicleModel') || getPlaceholder('Modèle du véhicule');
+            const vehicleYear = getValue('vehicleYear') || getPlaceholder('Année');
+            const vehiclePlate = getValue('vehiclePlate') || getPlaceholder('Immatriculation');
+
+            // Conditions du prêt
+            const amountFigures = getValue('amountFigures') || getPlaceholder('MONTANT');
+            const amountLetters = getValue('amountLetters') || getPlaceholder('Montant en lettres');
+            const dateVirement = getValue('dateVirement');
+            const paymentMethod = getValue('paymentMethod') || getPlaceholder('Mode de versement');
+            const repaymentDeadline = getValue('repaymentDeadline');
+
+            // Rémunération
+            const hasRemuneration = document.querySelector('input[name="hasRemuneration"]:checked')?.value || 'no';
+            const interestRate = getValue('interestRate') || getPlaceholder('TAUX');
+            const fixedAmount = getValue('fixedAmount') || getPlaceholder('MONTANT');
+
+            // Signature
+            const signaturePlace = getValue('signaturePlace') || getPlaceholder('Lieu');
+            const signatureDate = getValue('signatureDate');
+
+            // Section rémunération
+            let remunerationSection = '';
+            if (hasRemuneration === 'no') {
+                remunerationSection = '<p>Le présent prêt est consenti à titre gratuit. Il ne produira aucune rémunération.</p>';
+            } else if (hasRemuneration === 'percentage') {
+                remunerationSection = `<p>Le capital prêté portera intérêt au taux annuel fixe de <strong>${interestRate} %</strong>. Les intérêts seront calculés sur la durée effective du prêt et remboursés en même temps que le capital.</p>`;
+            } else if (hasRemuneration === 'fixed') {
+                remunerationSection = `<p>En contrepartie de ce prêt, le Prêteur percevra une rémunération forfaitaire de <strong>${fixedAmount} €</strong>, payable en même temps que le remboursement du capital.</p>`;
+            }
+
+            // Section emprunteur avec SIRET conditionnel
+            const borrowerSiretLine = borrowerSiret ? `<br />N° SIRET : ${borrowerSiret}` : '';
+
+            const contractHTML = `
+                <h1>CONTRAT DE PRÊT ENTRE PARTICULIERS</h1>
+                <p><strong>Entre les soussignés :</strong></p>
+                <p>
+                    <strong>Le Prêteur :</strong><br />
+                    M./Mme/Mx ${lenderName}<br />
+                    Né(e) le ${formatDate(lenderBirthDate)} à ${lenderBirthPlace}<br />
+                    Demeurant au ${lenderAddress}<br />
+                    Adresse e-mail : ${lenderEmail}<br />
+                    IBAN : ${lenderIban}
+                </p>
+                <p><strong>Et</strong></p>
+                <p>
+                    <strong>L'Emprunteur :</strong><br />
+                    M./Mme/Mx ${borrowerName}<br />
+                    Né(e) le ${formatDate(borrowerBirthDate)} à ${borrowerBirthPlace}<br />
+                    Demeurant au ${borrowerAddress}${borrowerSiretLine}<br />
+                    Adresse e-mail : ${borrowerEmail}<br />
+                    IBAN : ${borrowerIban}
+                </p>
+                <hr />
+                <h2>ARTICLE 1 : OBJET ET MONTANT DU PRÊT</h2>
+                <p>Le Prêteur consent par le présent contrat un prêt à l'Emprunteur, qui l'accepte, d'un montant de <strong>${amountFigures} €</strong>.</p>
+                <p>(En toutes lettres : <strong>${amountLetters} euros</strong>).</p>
+                <p>Ce prêt est destiné au financement du véhicule suivant : <strong>${vehicleModel} (${vehicleYear})</strong>, immatriculé <strong>${vehiclePlate}</strong>.</p>
+                
+                <h2>ARTICLE 2 : REMISE DES FONDS</h2>
+                <p>Cette somme est remise ce jour, le ${formatDate(dateVirement)}, par ${paymentMethod}.<br/>L'Emprunteur reconnaît avoir reçu la totalité de cette somme.</p>
+                
+                <h2>ARTICLE 3 : DURÉE ET MODALITÉS DE REMBOURSEMENT</h2>
+                <p>Le remboursement intégral du capital devra être effectué au plus tard le <strong>${formatDate(repaymentDeadline)}</strong>.</p>
+                
+                <h2>ARTICLE 4 : RÉMUNÉRATION</h2>
+                ${remunerationSection}
+                
+                <h2>ARTICLE 5 : REMBOURSEMENT ANTICIPÉ</h2>
+                <p>L'Emprunteur a la faculté de rembourser par anticipation tout ou partie du capital restant dû, à tout moment et sans pénalité.</p>
+                
+                <h2>ARTICLE 6 : DÉFAUT DE PAIEMENT</h2>
+                <p>En cas de non-remboursement à l'échéance convenue, et après une mise en demeure restée sans effet pendant 8 jours, la totalité du capital restant dû deviendra immédiatement exigible.</p>
+                
+                <h2>ARTICLE 7 : LITIGES</h2>
+                <p>En cas de non-respect des obligations contractuelles par l'Emprunteur, le Prêteur pourra engager la procédure suivante :</p>
+                <ol>
+                  <li><b>Mise en demeure :</b> Envoi d'une lettre recommandée avec accusé de réception, accordant 15 jours pour régulariser la situation.</li>
+                  <li><b>Intervention d'avocat :</b> Si la mise en demeure reste sans effet, le prêteur pourra mandater un avocat pour envoyer une sommation par voie d'huissier, délai supplémentaire de 8 jours.</li>
+                  <li><b>Procédure judiciaire :</b> A défaut de paiement, le prêteur pourra saisir le tribunal compétent pour obtenir une ordonnance d'injonction de payer ou un jugement.</li>
+                  <li><b>Exécution forcée :</b> Toutes les mesures légales d'exécution pourront être engagées (saisie sur comptes, biens, salaires...)</li>
+                  <li>Tous les frais liés à ces procédures seront à la charge de l'emprunteur.</li>
+                </ol>
+                <p>Toute contestation ou litige sera de la compétence exclusive du tribunal du lieu de domicile du Prêteur.</p>
+                
+                <br/><br/>
+                <p>Fait en deux exemplaires originaux, à ${signaturePlace}, le ${formatDate(signatureDate)}.</p>
+                
+                <div class="signature-block">
+                  <p><strong>Pour le Prêteur</strong></p>
+                  <p class="mention">Signature précédée de la mention manuscrite : "Lu et approuvé, bon pour prêt de la somme de ${amountLetters} euros"</p>
+                  <br/><br/><br/>
+                  <p>${lenderName}</p>
+                </div>
+                
+                <div class="signature-block">
+                  <p><strong>Pour l'Emprunteur</strong></p>
+                  <p class="mention">Signature précédée de la mention manuscrite : "Lu et approuvé, bon pour prêt de la somme de ${amountLetters} euros"</p>
+                  <br/><br/><br/>
+                  <p>${borrowerName}</p>
+                </div>
+            `;
+
+            document.getElementById('contractPreview').innerHTML = contractHTML;
+        }
+    </script>
+</body>
+</html>
